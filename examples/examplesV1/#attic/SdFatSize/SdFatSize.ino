@@ -10,15 +10,18 @@ SdFat sd;
 
 SdFile file;
 //------------------------------------------------------------------------------
-void setup() {
-  Serial.begin(9600);
+void setup()
+{
+  Serial.begin(115200);
 
   // Wait for USB Serial
-  while (!Serial) {
+  while (!Serial)
+  {
     SysCall::yield();
   }
 
-  if (!sd.begin()) {
+  if (!sd.begin())
+  {
     Serial.println("begin failed");
     return;
   }

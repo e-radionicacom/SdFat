@@ -11,7 +11,7 @@
 const size_t BUF_DIM = 32768;
 
 // 8 MiB file.
-const uint32_t FILE_SIZE = 256UL*BUF_DIM;
+const uint32_t FILE_SIZE = 256UL * BUF_DIM;
 
 SdFatSdio sd;
 
@@ -22,7 +22,7 @@ File file;
 uint8_t buf[BUF_DIM];
 
 // buffer as uint32_t
-uint32_t* buf32 = (uint32_t*)buf;
+uint32_t *buf32 = (uint32_t *)buf;
 
 // Total usec in read/write calls.
 uint32_t totalMicros = 0;
@@ -35,84 +35,102 @@ uint32_t yieldMaxUsec = 0;
 // Control access to the two versions of SdFat.
 bool useEx = false;
 //-----------------------------------------------------------------------------
-bool sdBusy() {
+bool sdBusy()
+{
   return useEx ? sdEx.card()->isBusy() : sd.card()->isBusy();
 }
 //-----------------------------------------------------------------------------
-void errorHalt(const char* msg) {
-  if (useEx) {
+void errorHalt(const char *msg)
+{
+  if (useEx)
+  {
     sdEx.errorHalt(msg);
-  } else {
+  }
+  else
+  {
     sd.errorHalt(msg);
   }
 }
 //------------------------------------------------------------------------------
-uint32_t kHzSdClk() {
+uint32_t kHzSdClk()
+{
   return useEx ? sdEx.card()->kHzSdClk() : sd.card()->kHzSdClk();
 }
 //------------------------------------------------------------------------------
 // Replace "weak" system yield() function.
-void yield() {
+void yield()
+{
   // Only count cardBusy time.
-  if (!sdBusy()) {
+  if (!sdBusy())
+  {
     return;
   }
   uint32_t m = micros();
   yieldCalls++;
-  while (sdBusy()) {
+  while (sdBusy())
+  {
     // Do something here.
   }
   m = micros() - m;
-  if (m > yieldMaxUsec) {
+  if (m > yieldMaxUsec)
+  {
     yieldMaxUsec = m;
   }
   yieldMicros += m;
 }
 //-----------------------------------------------------------------------------
-void runTest() {
+void runTest()
+{
   // Zero Stats
   totalMicros = 0;
   yieldMicros = 0;
   yieldCalls = 0;
   yieldMaxUsec = 0;
-  if (!file.open("TeensyDemo.bin", O_RDWR | O_CREAT)) {
+  if (!file.open("TeensyDemo.bin", O_RDWR | O_CREAT))
+  {
     errorHalt("open failed");
   }
   Serial.println("\nsize,write,read");
   Serial.println("bytes,KB/sec,KB/sec");
-  for (size_t nb = 512; nb <= BUF_DIM; nb *= 2) {
+  for (size_t nb = 512; nb <= BUF_DIM; nb *= 2)
+  {
     file.truncate(0);
-    uint32_t nRdWr = FILE_SIZE/nb;
+    uint32_t nRdWr = FILE_SIZE / nb;
     Serial.print(nb);
     Serial.print(',');
     uint32_t t = micros();
-    for (uint32_t n = 0; n < nRdWr; n++) {
+    for (uint32_t n = 0; n < nRdWr; n++)
+    {
       // Set start and end of buffer.
       buf32[0] = n;
-      buf32[nb/4 - 1] = n;
-      if (nb != file.write(buf, nb)) {
+      buf32[nb / 4 - 1] = n;
+      if (nb != file.write(buf, nb))
+      {
         errorHalt("write failed");
       }
     }
     t = micros() - t;
     totalMicros += t;
-    Serial.print(1000.0*FILE_SIZE/t);
+    Serial.print(1000.0 * FILE_SIZE / t);
     Serial.print(',');
     file.rewind();
     t = micros();
 
-    for (uint32_t n = 0; n < nRdWr; n++) {
-      if ((int)nb != file.read(buf, nb)) {
+    for (uint32_t n = 0; n < nRdWr; n++)
+    {
+      if ((int)nb != file.read(buf, nb))
+      {
         errorHalt("read failed");
       }
       // crude check of data.
-      if (buf32[0] != n || buf32[nb/4 - 1] != n) {
+      if (buf32[0] != n || buf32[nb / 4 - 1] != n)
+      {
         errorHalt("data check");
       }
     }
     t = micros() - t;
     totalMicros += t;
-    Serial.println(1000.0*FILE_SIZE/t);
+    Serial.println(1000.0 * FILE_SIZE / t);
   }
   file.close();
   Serial.print("\ntotalMicros  ");
@@ -128,38 +146,49 @@ void runTest() {
   Serial.println("Done");
 }
 //-----------------------------------------------------------------------------
-void setup() {
-  Serial.begin(9600);
-  while (!Serial) {
+void setup()
+{
+  Serial.begin(115200);
+  while (!Serial)
+  {
   }
   Serial.println("SdFatSdioEX uses extended multi-block transfers without DMA.");
   Serial.println("SdFatSdio uses a traditional DMA SDIO implementation.");
   Serial.println("Note the difference is speed and busy yield time.\n");
 }
 //-----------------------------------------------------------------------------
-void loop() {
-  do {
+void loop()
+{
+  do
+  {
     delay(10);
   } while (Serial.available() && Serial.read());
 
   Serial.println("Type '1' for SdFatSdioEX or '2' for SdFatSdio");
-  while (!Serial.available()) {
+  while (!Serial.available())
+  {
   }
   char c = Serial.read();
-  if (c != '1' && c != '2') {
+  if (c != '1' && c != '2')
+  {
     Serial.println("Invalid input");
     return;
   }
-  if (c =='1') {
+  if (c == '1')
+  {
     useEx = true;
-    if (!sdEx.begin()) {
+    if (!sdEx.begin())
+    {
       sd.initErrorHalt("SdFatSdioEX begin() failed");
     }
     // make sdEx the current volume.
     sdEx.chvol();
-  } else {
+  }
+  else
+  {
     useEx = false;
-    if (!sd.begin()) {
+    if (!sd.begin())
+    {
       sd.initErrorHalt("SdFatSdio begin() failed");
     }
     // make sd the current volume.

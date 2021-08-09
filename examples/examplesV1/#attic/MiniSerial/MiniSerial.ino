@@ -7,23 +7,29 @@
 #include <SPI.h>
 #include "SdFat.h"
 #include "FreeStack.h"
-#ifdef UDR0  // Must be AVR with serial port zero.
+#ifdef UDR0 // Must be AVR with serial port zero.
 #include "MinimumSerial.h"
 
 MinimumSerial MiniSerial;
 
-void setup() {
+void setup()
+{
   MiniSerial.begin(9600);
   MiniSerial.println(FreeStack());
 }
-void loop() {
+void loop()
+{
   int c;
   MiniSerial.println(F("Type any Character"));
-  while ((c = MiniSerial.read()) < 0) {}
+  while ((c = MiniSerial.read()) < 0)
+  {
+  }
   MiniSerial.print(F("Read: "));
   MiniSerial.println((char)c);
-  while (MiniSerial.read() >= 0) {}
+  while (MiniSerial.read() >= 0)
+  {
+  }
 }
-#else  // UDR0
+#else // UDR0
 #error no AVR serial port 0
-#endif  // UDR0
+#endif // UDR0

@@ -15,7 +15,8 @@ ArduinoOutStream cout(Serial);
 // store error strings in flash memory
 #define error(s) sd.errorHalt(F(s))
 //------------------------------------------------------------------------------
-void demoFgets() {
+void demoFgets()
+{
   char line[25];
   int c;
   uint32_t pos;
@@ -24,31 +25,37 @@ void demoFgets() {
   SdFile rdfile("fgets.txt", O_RDWR);
 
   // check for open error
-  if (!rdfile.isOpen()) {
+  if (!rdfile.isOpen())
+  {
     error("demoFgets");
   }
 
   // list file
   cout << F("-----Before Rewrite\r\n");
-  while ((c = rdfile.read()) >= 0) {
+  while ((c = rdfile.read()) >= 0)
+  {
     Serial.write(c);
   }
 
   rdfile.rewind();
   // read lines from the file to get position
-  while (1) {
+  while (1)
+  {
     pos = rdfile.curPosition();
-    if (rdfile.fgets(line, sizeof(line)) < 0) {
+    if (rdfile.fgets(line, sizeof(line)) < 0)
+    {
       error("Line not found");
     }
     // find line that contains "Line C"
-    if (strstr(line, "Line C")) {
+    if (strstr(line, "Line C"))
+    {
       break;
     }
   }
 
   // rewrite line with 'C'
-  if (!rdfile.seekSet(pos)) {
+  if (!rdfile.seekSet(pos))
+  {
     error("seekSet");
   }
   rdfile.println("Line R");
@@ -56,7 +63,8 @@ void demoFgets() {
 
   // list file
   cout << F("\r\n-----After Rewrite\r\n");
-  while ((c = rdfile.read()) >= 0) {
+  while ((c = rdfile.read()) >= 0)
+  {
     Serial.write(c);
   }
 
@@ -64,41 +72,46 @@ void demoFgets() {
   rdfile.close();
 }
 //------------------------------------------------------------------------------
-void makeTestFile() {
+void makeTestFile()
+{
   // create or open test file
   SdFile wrfile("fgets.txt", O_WRONLY | O_CREAT | O_TRUNC);
 
   // check for open error
-  if (!wrfile.isOpen()) {
+  if (!wrfile.isOpen())
+  {
     error("MakeTestFile");
   }
 
   // write test file
   wrfile.print(F(
-                 "Line A\r\n"
-                 "Line B\r\n"
-                 "Line C\r\n"
-                 "Line D\r\n"
-                 "Line E\r\n"
-               ));
+      "Line A\r\n"
+      "Line B\r\n"
+      "Line C\r\n"
+      "Line D\r\n"
+      "Line E\r\n"));
   wrfile.close();
 }
 //------------------------------------------------------------------------------
-void setup() {
-  Serial.begin(9600);
+void setup()
+{
+  Serial.begin(115200);
 
   // Wait for USB Serial
-  while (!Serial) {
+  while (!Serial)
+  {
     SysCall::yield();
   }
   cout << F("Type any character to start\n");
-  while (!Serial.available()) {
+  while (!Serial.available())
+  {
     SysCall::yield();
   }
 
   // Initialize at the highest speed supported by the board that is
   // not over 50 MHz. Try a lower speed if SPI errors occur.
-  if (!sd.begin(chipSelect, SD_SCK_MHZ(50))) {
+  if (!sd.begin(chipSelect, SD_SCK_MHZ(50)))
+  {
     sd.initErrorHalt();
   }
 

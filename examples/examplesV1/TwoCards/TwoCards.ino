@@ -7,26 +7,28 @@
 #include "FreeStack.h"
 
 SdFat sd1;
-const uint8_t SD1_CS = 10;  // chip select for sd1
+const uint8_t SD1_CS = 10; // chip select for sd1
 
 SdFat sd2;
-const uint8_t SD2_CS = 4;   // chip select for sd2
+const uint8_t SD2_CS = 4; // chip select for sd2
 
 const uint8_t BUF_DIM = 100;
 uint8_t buf[BUF_DIM];
 
 const uint32_t FILE_SIZE = 1000000;
-const uint32_t NWRITE = FILE_SIZE/BUF_DIM;
+const uint32_t NWRITE = FILE_SIZE / BUF_DIM;
 //------------------------------------------------------------------------------
 // print error msg, any SD error codes, and halt.
 // store messages in flash
 #define errorExit(msg) errorHalt(F(msg))
 #define initError(msg) initErrorHalt(F(msg))
 //------------------------------------------------------------------------------
-void setup() {
-  Serial.begin(9600);
+void setup()
+{
+  Serial.begin(115200);
   // Wait for USB Serial
-  while (!Serial) {
+  while (!Serial)
+  {
     SysCall::yield();
   }
   Serial.print(F("FreeStack: "));
@@ -34,12 +36,14 @@ void setup() {
   Serial.println(FreeStack());
 
   // fill buffer with known data
-  for (size_t i = 0; i < sizeof(buf); i++) {
+  for (size_t i = 0; i < sizeof(buf); i++)
+  {
     buf[i] = i;
   }
 
   Serial.println(F("type any character to start"));
-  while (!Serial.available()) {
+  while (!Serial.available())
+  {
     SysCall::yield();
   }
 
@@ -48,22 +52,28 @@ void setup() {
   digitalWrite(SD2_CS, HIGH);
 
   // initialize the first card
-  if (!sd1.begin(SD1_CS)) {
+  if (!sd1.begin(SD1_CS))
+  {
     sd1.initError("sd1:");
   }
   // create Dir1 on sd1 if it does not exist
-  if (!sd1.exists("/Dir1")) {
-    if (!sd1.mkdir("/Dir1")) {
+  if (!sd1.exists("/Dir1"))
+  {
+    if (!sd1.mkdir("/Dir1"))
+    {
       sd1.errorExit("sd1.mkdir");
     }
   }
   // initialize the second card
-  if (!sd2.begin(SD2_CS)) {
+  if (!sd2.begin(SD2_CS))
+  {
     sd2.initError("sd2:");
   }
-// create Dir2 on sd2 if it does not exist
-  if (!sd2.exists("/Dir2")) {
-    if (!sd2.mkdir("/Dir2")) {
+  // create Dir2 on sd2 if it does not exist
+  if (!sd2.exists("/Dir2"))
+  {
+    if (!sd2.mkdir("/Dir2"))
+    {
       sd2.errorExit("sd2.mkdir");
     }
   }
@@ -74,12 +84,14 @@ void setup() {
   sd2.ls();
 
   // make /Dir1 the default directory for sd1
-  if (!sd1.chdir("/Dir1")) {
+  if (!sd1.chdir("/Dir1"))
+  {
     sd1.errorExit("sd1.chdir");
   }
 
   // make /Dir2 the default directory for sd2
-  if (!sd2.chdir("/Dir2")) {
+  if (!sd2.chdir("/Dir2"))
+  {
     sd2.errorExit("sd2.chdir");
   }
 
@@ -91,8 +103,10 @@ void setup() {
   Serial.println(F("---------------------"));
 
   // remove rename.bin from /Dir2 directory of sd2
-  if (sd2.exists("rename.bin")) {
-    if (!sd2.remove("rename.bin")) {
+  if (sd2.exists("rename.bin"))
+  {
+    if (!sd2.remove("rename.bin"))
+    {
       sd2.errorExit("remove rename.bin");
     }
   }
@@ -101,14 +115,17 @@ void setup() {
 
   // create or open /Dir1/test.bin and truncate it to zero length
   SdFile file1;
-  if (!file1.open("test.bin", O_RDWR | O_CREAT | O_TRUNC)) {
+  if (!file1.open("test.bin", O_RDWR | O_CREAT | O_TRUNC))
+  {
     sd1.errorExit("file1");
   }
   Serial.println(F("Writing test.bin to sd1"));
 
   // write data to /Dir1/test.bin on sd1
-  for (uint32_t i = 0; i < NWRITE; i++) {
-    if (file1.write(buf, sizeof(buf)) != sizeof(buf)) {
+  for (uint32_t i = 0; i < NWRITE; i++)
+  {
+    if (file1.write(buf, sizeof(buf)) != sizeof(buf))
+    {
       sd1.errorExit("sd1.write");
     }
   }
@@ -117,7 +134,8 @@ void setup() {
 
   // create or open /Dir2/copy.bin and truncate it to zero length
   SdFile file2;
-  if (!file2.open("copy.bin", O_WRONLY | O_CREAT | O_TRUNC)) {
+  if (!file2.open("copy.bin", O_WRONLY | O_CREAT | O_TRUNC))
+  {
     sd2.errorExit("file2");
   }
   Serial.println(F("Copying test.bin to copy.bin"));
@@ -126,15 +144,19 @@ void setup() {
   file1.rewind();
   uint32_t t = millis();
 
-  while (1) {
+  while (1)
+  {
     int n = file1.read(buf, sizeof(buf));
-    if (n < 0) {
+    if (n < 0)
+    {
       sd1.errorExit("read1");
     }
-    if (n == 0) {
+    if (n == 0)
+    {
       break;
     }
-    if ((int)file2.write(buf, n) != n) {
+    if ((int)file2.write(buf, n) != n)
+    {
       sd2.errorExit("write2");
     }
   }
@@ -155,7 +177,8 @@ void setup() {
   Serial.println(F("---------------------"));
   Serial.println(F("Renaming copy.bin"));
   // rename the copy
-  if (!sd2.rename("copy.bin", "rename.bin")) {
+  if (!sd2.rename("copy.bin", "rename.bin"))
+  {
     sd2.errorExit("sd2.rename");
   }
   // list current directory on both cards

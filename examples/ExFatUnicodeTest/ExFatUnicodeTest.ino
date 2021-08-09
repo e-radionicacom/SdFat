@@ -11,7 +11,7 @@ const uint8_t SD_CS_PIN = SS;
 #else  // SDCARD_SS_PIN
 // Assume built-in SD is used.
 const uint8_t SD_CS_PIN = SDCARD_SS_PIN;
-#endif  // SDCARD_SS_PIN
+#endif // SDCARD_SS_PIN
 
 // Use SPI, SD_CS_PIN, SHARED_SPI, 50 MHz.
 #define SD_CONFIG SdSpiConfig(SD_CS_PIN)
@@ -20,19 +20,24 @@ SdExFat sd;
 
 ExFile file;
 
-void setup() {
-  Serial.begin(9600);
-  while (!Serial) {
+void setup()
+{
+  Serial.begin(115200);
+  while (!Serial)
+  {
     yield();
   }
   Serial.println("Type any character to begin");
-  while (!Serial.available()) {
+  while (!Serial.available())
+  {
     yield();
   }
-  if (!sd.begin(SD_CONFIG)) {
+  if (!sd.begin(SD_CONFIG))
+  {
     sd.initErrorHalt(&Serial);
   }
-  if (!file.open(u"Euros \u20AC test.txt", FILE_WRITE)) {
+  if (!file.open(u"Euros \u20AC test.txt", FILE_WRITE))
+  {
     Serial.println("file.open failed");
     return;
   }
@@ -40,8 +45,9 @@ void setup() {
   file.close();
   Serial.println("Done!");
 }
-void loop() {
+void loop()
+{
 }
-#else  // USE_EXFAT_UNICODE_NAMES
+#else // USE_EXFAT_UNICODE_NAMES
 #error USE_EXFAT_UNICODE_NAMES must be nonzero in SdFat/src/ExFatLib/ExFatCongfig.h
-#endif  // USE_EXFAT_UNICODE_NAMES
+#endif // USE_EXFAT_UNICODE_NAMES

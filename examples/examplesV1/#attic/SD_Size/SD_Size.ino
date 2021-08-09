@@ -7,15 +7,18 @@
 
 File file;
 //------------------------------------------------------------------------------
-void setup() {
-  Serial.begin(9600);
+void setup()
+{
+  Serial.begin(115200);
 
   // Wait for USB Serial
-  while (!Serial) {
+  while (!Serial)
+  {
     yield();
   }
 
-  if (!SD.begin()) {
+  if (!SD.begin())
+  {
     Serial.println("begin failed");
     return;
   }

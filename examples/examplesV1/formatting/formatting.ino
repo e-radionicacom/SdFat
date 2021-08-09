@@ -10,12 +10,15 @@
 ArduinoOutStream cout(Serial);
 //------------------------------------------------------------------------------
 // print a table to demonstrate format manipulators
-void example(void) {
+void example(void)
+{
   const int max = 10;
   const int width = 4;
 
-  for (int row = 1; row <= max; row++) {
-    for (int col = 1; col <= max; col++) {
+  for (int row = 1; row <= max; row++)
+  {
+    for (int col = 1; col <= max; col++)
+    {
       cout << setw(width) << row * col << (col == max ? '\n' : ' ');
     }
   }
@@ -24,9 +27,11 @@ void example(void) {
 //------------------------------------------------------------------------------
 // print a date as mm/dd/yyyy with zero fill in mm and dd
 // shows how to set and restore the fill character
-void showDate(int m, int d, int y) {
+void showDate(int m, int d, int y)
+{
   // convert two digit year
-  if (y < 100) {
+  if (y < 100)
+  {
     y += 2000;
   }
 
@@ -40,16 +45,19 @@ void showDate(int m, int d, int y) {
   cout.fill(old);
 }
 //------------------------------------------------------------------------------
-void setup(void) {
-  Serial.begin(9600);
+void setup(void)
+{
+  Serial.begin(115200);
 
   // Wait for USB Serial
-  while (!Serial) {
+  while (!Serial)
+  {
     SysCall::yield();
   }
   delay(2000);
 
-  cout << endl << "default formatting" << endl;
+  cout << endl
+       << "default formatting" << endl;
   example();
 
   cout << showpos << "showpos" << endl;
@@ -59,14 +67,14 @@ void setup(void) {
   example();
 
   cout << internal << setfill('0') << uppercase;
-  cout << "uppercase hex internal showbase fill('0')" <<endl;
+  cout << "uppercase hex internal showbase fill('0')" << endl;
   example();
 
   // restore default format flags and fill character
   cout.flags(ios::dec | ios::right | ios::skipws);
   cout.fill(' ');
 
-  cout << "showDate example" <<endl;
+  cout << "showDate example" << endl;
   showDate(7, 4, 11);
   showDate(12, 25, 11);
 }

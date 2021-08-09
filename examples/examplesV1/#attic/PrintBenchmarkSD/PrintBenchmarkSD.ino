@@ -10,58 +10,68 @@ const uint8_t chipSelect = SS;
 // number of lines to print
 const uint16_t N_PRINT = 20000;
 
-
 // test file
 File file;
 
 //------------------------------------------------------------------------------
-void error(const char* s) {
+void error(const char *s)
+{
   Serial.println(s);
-  while (1) {
+  while (1)
+  {
     yield();
   }
 }
 //------------------------------------------------------------------------------
-void setup() {
-  Serial.begin(9600);
+void setup()
+{
+  Serial.begin(115200);
 
   // Wait for USB Serial
-  while (!Serial) {
+  while (!Serial)
+  {
     yield();
   }
 }
 //------------------------------------------------------------------------------
-void loop() {
+void loop()
+{
   uint32_t maxLatency;
   uint32_t minLatency;
   uint32_t totalLatency;
 
   // Read any existing Serial data.
-  do {
+  do
+  {
     delay(10);
   } while (Serial.available() && Serial.read() >= 0);
 
   // F() stores strings in flash to save RAM
   Serial.println(F("Type any character to start"));
-  while (!Serial.available()) {
+  while (!Serial.available())
+  {
     yield();
   }
 
   // initialize the SD card
-  if (!SD.begin(chipSelect)) {
+  if (!SD.begin(chipSelect))
+  {
     error("begin");
   }
 
   Serial.println(F("Starting print test.  Please wait.\n"));
 
   // do write test
-  for (int test = 0; test < 2; test++) {
+  for (int test = 0; test < 2; test++)
+  {
     file = SD.open("bench.txt", FILE_WRITE);
 
-    if (!file) {
+    if (!file)
+    {
       error("open failed");
     }
-    switch(test) {
+    switch (test)
+    {
     case 0:
       Serial.println(F("Test of println(uint16_t)"));
       break;
@@ -74,27 +84,32 @@ void loop() {
     minLatency = 999999;
     totalLatency = 0;
     uint32_t t = millis();
-    for (uint16_t i = 0; i < N_PRINT; i++) {
+    for (uint16_t i = 0; i < N_PRINT; i++)
+    {
       uint32_t m = micros();
 
-      switch(test) {
+      switch (test)
+      {
       case 0:
         file.println(i);
         break;
 
       case 1:
-        file.println((double)0.01*i);
+        file.println((double)0.01 * i);
         break;
       }
 
-      if (file.getWriteError()) {
+      if (file.getWriteError())
+      {
         error("write failed");
       }
       m = micros() - m;
-      if (maxLatency < m) {
+      if (maxLatency < m)
+      {
         maxLatency = m;
       }
-      if (minLatency > m) {
+      if (minLatency > m)
+      {
         minLatency = m;
       }
       totalLatency += m;
@@ -103,20 +118,20 @@ void loop() {
     t = millis() - t;
     double s = file.size();
     Serial.print(F("Time "));
-    Serial.print(0.001*t);
+    Serial.print(0.001 * t);
     Serial.println(F(" sec"));
     Serial.print(F("File size "));
-    Serial.print(0.001*s);
+    Serial.print(0.001 * s);
     Serial.print(F(" KB\n"));
     Serial.print(F("Write "));
-    Serial.print(s/t);
+    Serial.print(s / t);
     Serial.print(F(" KB/sec\n"));
     Serial.print(F("Maximum latency: "));
     Serial.print(maxLatency);
     Serial.print(F(" usec, Minimum Latency: "));
     Serial.print(minLatency);
     Serial.print(F(" usec, Avg Latency: "));
-    Serial.print(totalLatency/N_PRINT);
+    Serial.print(totalLatency / N_PRINT);
     Serial.println(F(" usec\n"));
     SD.remove("bench.txt");
   }

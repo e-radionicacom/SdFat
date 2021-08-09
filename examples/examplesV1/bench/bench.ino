@@ -27,7 +27,7 @@ const uint8_t READ_COUNT = 2;
 // End of configuration constants.
 //------------------------------------------------------------------------------
 // File size in bytes.
-const uint32_t FILE_SIZE = 1000000UL*FILE_SIZE_MB;
+const uint32_t FILE_SIZE = 1000000UL * FILE_SIZE_MB;
 
 uint8_t buf[BUF_SIZE];
 
@@ -39,7 +39,7 @@ uint8_t buf[BUF_SIZE];
 SdFatSdioEX sd;
 #else  // USE_SDIO
 SdFat sd;
-#endif  // USE_SDIO
+#endif // USE_SDIO
 
 // Set ENABLE_EXTENDED_TRANSFER_CLASS to use extended SD I/O.
 // Requires dedicated use of the SPI bus.
@@ -58,16 +58,19 @@ ArduinoOutStream cout(Serial);
 // Store error strings in flash to save RAM.
 #define error(s) sd.errorHalt(F(s))
 //------------------------------------------------------------------------------
-void cidDmp() {
+void cidDmp()
+{
   cid_t cid;
-  if (!sd.card()->readCID(&cid)) {
+  if (!sd.card()->readCID(&cid))
+  {
     error("readCID failed");
   }
   cout << F("\nManufacturer ID: ");
   cout << hex << int(cid.mid) << dec << endl;
   cout << F("OEM ID: ") << cid.oid[0] << cid.oid[1] << endl;
   cout << F("Product: ");
-  for (uint8_t i = 0; i < 5; i++) {
+  for (uint8_t i = 0; i < 5; i++)
+  {
     cout << cid.pnm[i];
   }
   cout << F("\nVersion: ");
@@ -79,11 +82,13 @@ void cidDmp() {
   cout << endl;
 }
 //------------------------------------------------------------------------------
-void setup() {
-  Serial.begin(9600);
+void setup()
+{
+  Serial.begin(115200);
 
   // Wait for USB Serial
-  while (!Serial) {
+  while (!Serial)
+  {
     SysCall::yield();
   }
   delay(1000);
@@ -93,7 +98,8 @@ void setup() {
   cout << uppercase << showbase << endl;
 }
 //------------------------------------------------------------------------------
-void loop() {
+void loop()
+{
   float s;
   uint32_t t;
   uint32_t maxLatency;
@@ -101,74 +107,86 @@ void loop() {
   uint32_t totalLatency;
 
   // Discard any input.
-  do {
+  do
+  {
     delay(10);
   } while (Serial.available() && Serial.read() >= 0);
 
   // F( stores strings in flash to save RAM
   cout << F("Type any character to start\n");
-  while (!Serial.available()) {
+  while (!Serial.available())
+  {
     SysCall::yield();
   }
   cout << F("chipSelect: ") << int(chipSelect) << endl;
   cout << F("FreeStack: ") << FreeStack() << endl;
 
 #if USE_SDIO
-  if (!sd.begin()) {
+  if (!sd.begin())
+  {
     sd.initErrorHalt();
   }
 #else  // USE_SDIO
   // Initialize at the highest speed supported by the board that is
   // not over 50 MHz. Try a lower speed if SPI errors occur.
-  if (!sd.begin(chipSelect, SD_SCK_MHZ(50))) {
+  if (!sd.begin(chipSelect, SD_SCK_MHZ(50)))
+  {
     sd.initErrorHalt();
   }
-#endif  // USE_SDIO
+#endif // USE_SDIO
   cout << F("Type is FAT") << int(sd.vol()->fatType()) << endl;
-  cout << F("Card size: ") << sd.card()->cardSize()*512E-9;
+  cout << F("Card size: ") << sd.card()->cardSize() * 512E-9;
   cout << F(" GB (GB = 1E9 bytes)") << endl;
 
   cidDmp();
 
   // open or create file - truncate existing file.
-  if (!file.open("bench.dat", O_RDWR | O_CREAT | O_TRUNC)) {
+  if (!file.open("bench.dat", O_RDWR | O_CREAT | O_TRUNC))
+  {
     error("open failed");
   }
 
   // fill buf with known data
-  for (size_t i = 0; i < (BUF_SIZE-2); i++) {
+  for (size_t i = 0; i < (BUF_SIZE - 2); i++)
+  {
     buf[i] = 'A' + (i % 26);
   }
-  buf[BUF_SIZE-2] = '\r';
-  buf[BUF_SIZE-1] = '\n';
+  buf[BUF_SIZE - 2] = '\r';
+  buf[BUF_SIZE - 1] = '\n';
 
   cout << F("File size ") << FILE_SIZE_MB << F(" MB\n");
   cout << F("Buffer size ") << BUF_SIZE << F(" bytes\n");
-  cout << F("Starting write test, please wait.") << endl << endl;
+  cout << F("Starting write test, please wait.") << endl
+       << endl;
 
   // do write test
-  uint32_t n = FILE_SIZE/sizeof(buf);
-  cout <<F("write speed and latency") << endl;
+  uint32_t n = FILE_SIZE / sizeof(buf);
+  cout << F("write speed and latency") << endl;
   cout << F("speed,max,min,avg") << endl;
   cout << F("KB/Sec,usec,usec,usec") << endl;
-  for (uint8_t nTest = 0; nTest < WRITE_COUNT; nTest++) {
+  for (uint8_t nTest = 0; nTest < WRITE_COUNT; nTest++)
+  {
     file.truncate(0);
     maxLatency = 0;
     minLatency = 9999999;
     totalLatency = 0;
     t = millis();
-    for (uint32_t i = 0; i < n; i++) {
+    for (uint32_t i = 0; i < n; i++)
+    {
       uint32_t m = micros();
-      if (file.write(buf, sizeof(buf)) != sizeof(buf)) {
+      if (file.write(buf, sizeof(buf)) != sizeof(buf))
+      {
         sd.errorPrint("write failed");
         file.close();
         return;
       }
       m = micros() - m;
-      if (maxLatency < m) {
+      if (maxLatency < m)
+      {
         maxLatency = m;
       }
-      if (minLatency > m) {
+      if (minLatency > m)
+      {
         minLatency = m;
       }
       totalLatency += m;
@@ -176,47 +194,56 @@ void loop() {
     file.sync();
     t = millis() - t;
     s = file.fileSize();
-    cout << s/t <<',' << maxLatency << ',' << minLatency;
-    cout << ',' << totalLatency/n << endl;
+    cout << s / t << ',' << maxLatency << ',' << minLatency;
+    cout << ',' << totalLatency / n << endl;
   }
-  cout << endl << F("Starting read test, please wait.") << endl;
-  cout << endl <<F("read speed and latency") << endl;
+  cout << endl
+       << F("Starting read test, please wait.") << endl;
+  cout << endl
+       << F("read speed and latency") << endl;
   cout << F("speed,max,min,avg") << endl;
   cout << F("KB/Sec,usec,usec,usec") << endl;
 
   // do read test
-  for (uint8_t nTest = 0; nTest < READ_COUNT; nTest++) {
+  for (uint8_t nTest = 0; nTest < READ_COUNT; nTest++)
+  {
     file.rewind();
     maxLatency = 0;
     minLatency = 9999999;
     totalLatency = 0;
     t = millis();
-    for (uint32_t i = 0; i < n; i++) {
-      buf[BUF_SIZE-1] = 0;
+    for (uint32_t i = 0; i < n; i++)
+    {
+      buf[BUF_SIZE - 1] = 0;
       uint32_t m = micros();
       int32_t nr = file.read(buf, sizeof(buf));
-      if (nr != sizeof(buf)) {
+      if (nr != sizeof(buf))
+      {
         sd.errorPrint("read failed");
         file.close();
         return;
       }
       m = micros() - m;
-      if (maxLatency < m) {
+      if (maxLatency < m)
+      {
         maxLatency = m;
       }
-      if (minLatency > m) {
+      if (minLatency > m)
+      {
         minLatency = m;
       }
       totalLatency += m;
-      if (buf[BUF_SIZE-1] != '\n') {
+      if (buf[BUF_SIZE - 1] != '\n')
+      {
         error("data check");
       }
     }
     s = file.fileSize();
     t = millis() - t;
-    cout << s/t <<',' << maxLatency << ',' << minLatency;
-    cout << ',' << totalLatency/n << endl;
+    cout << s / t << ',' << maxLatency << ',' << minLatency;
+    cout << ',' << totalLatency / n << endl;
   }
-  cout << endl << F("Done") << endl;
+  cout << endl
+       << F("Done") << endl;
   file.close();
 }

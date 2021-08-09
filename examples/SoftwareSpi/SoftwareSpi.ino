@@ -4,7 +4,7 @@
 // This example will also run on an Uno and other boards using software SPI.
 //
 #include "SdFat.h"
-#if SPI_DRIVER_SELECT == 2  // Must be set in SdFat/SdFatConfig.h
+#if SPI_DRIVER_SELECT == 2 // Must be set in SdFat/SdFatConfig.h
 
 // SD_FAT_TYPE = 0 for SdFat/File as defined in SdFatConfig.h,
 // 1 for FAT16/FAT32, 2 for exFAT, 3 for FAT16/FAT32 and exFAT.
@@ -16,16 +16,16 @@ const uint8_t SD_CS_PIN = 10;
 // Pin numbers in templates must be constants.
 const uint8_t SOFT_MISO_PIN = 12;
 const uint8_t SOFT_MOSI_PIN = 11;
-const uint8_t SOFT_SCK_PIN  = 13;
+const uint8_t SOFT_SCK_PIN = 13;
 
 // SdFat software SPI template
 SoftSpiDriver<SOFT_MISO_PIN, SOFT_MOSI_PIN, SOFT_SCK_PIN> softSpi;
 // Speed argument is ignored for software SPI.
 #if ENABLE_DEDICATED_SPI
 #define SD_CONFIG SdSpiConfig(SD_CS_PIN, DEDICATED_SPI, SD_SCK_MHZ(0), &softSpi)
-#else  // ENABLE_DEDICATED_SPI
+#else // ENABLE_DEDICATED_SPI
 #define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(0), &softSpi)
-#endif  // ENABLE_DEDICATED_SPI
+#endif // ENABLE_DEDICATED_SPI
 
 #if SD_FAT_TYPE == 0
 SdFat sd;
@@ -39,33 +39,39 @@ ExFile file;
 #elif SD_FAT_TYPE == 3
 SdFs sd;
 FsFile file;
-#else  // SD_FAT_TYPE
+#else // SD_FAT_TYPE
 #error Invalid SD_FAT_TYPE
-#endif  // SD_FAT_TYPE
+#endif // SD_FAT_TYPE
 
-void setup() {
-  Serial.begin(9600);
+void setup()
+{
+  Serial.begin(115200);
   // Wait for USB Serial
-  while (!Serial) {
+  while (!Serial)
+  {
     SysCall::yield();
   }
   Serial.println("Type any character to start");
-  while (!Serial.available()) {
+  while (!Serial.available())
+  {
     SysCall::yield();
   }
 
-  if (!sd.begin(SD_CONFIG)) {
+  if (!sd.begin(SD_CONFIG))
+  {
     sd.initErrorHalt();
   }
 
-  if (!file.open("SoftSPI.txt", O_RDWR | O_CREAT)) {
+  if (!file.open("SoftSPI.txt", O_RDWR | O_CREAT))
+  {
     sd.errorHalt(F("open failed"));
   }
   file.println(F("This line was printed using software SPI."));
 
   file.rewind();
 
-  while (file.available()) {
+  while (file.available())
+  {
     Serial.write(file.read());
   }
 
@@ -75,6 +81,6 @@ void setup() {
 }
 //------------------------------------------------------------------------------
 void loop() {}
-#else  // SPI_DRIVER_SELECT
+#else // SPI_DRIVER_SELECT
 #error SPI_DRIVER_SELECT must be two in SdFat/SdFatConfig.h
-#endif  //SPI_DRIVER_SELECT
+#endif //SPI_DRIVER_SELECT

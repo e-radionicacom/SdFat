@@ -6,12 +6,12 @@
 #include <SPI.h>
 #include "SdFat.h"
 #error See Version 2 software SPI example
-#if ENABLE_SOFTWARE_SPI_CLASS  // Must be set in SdFat/SdFatConfig.h
+#if ENABLE_SOFTWARE_SPI_CLASS // Must be set in SdFat/SdFatConfig.h
 //
 // Pin numbers in templates must be constants.
 const uint8_t SOFT_MISO_PIN = 12;
 const uint8_t SOFT_MOSI_PIN = 11;
-const uint8_t SOFT_SCK_PIN  = 13;
+const uint8_t SOFT_SCK_PIN = 13;
 //
 // Chip select may be constant or RAM variable.
 const uint8_t SD_CHIP_SELECT_PIN = 10;
@@ -22,29 +22,35 @@ SdFatSoftSpi<SOFT_MISO_PIN, SOFT_MOSI_PIN, SOFT_SCK_PIN> sd;
 // Test file.
 SdFile file;
 
-void setup() {
-  Serial.begin(9600);
+void setup()
+{
+  Serial.begin(115200);
   // Wait for USB Serial
-  while (!Serial) {
+  while (!Serial)
+  {
     SysCall::yield();
   }
   Serial.println("Type any character to start");
-  while (!Serial.available()) {
+  while (!Serial.available())
+  {
     SysCall::yield();
   }
 
-  if (!sd.begin(SD_CHIP_SELECT_PIN)) {
+  if (!sd.begin(SD_CHIP_SELECT_PIN))
+  {
     sd.initErrorHalt();
   }
 
-  if (!file.open("SoftSPI.txt", O_RDWR | O_CREAT)) {
+  if (!file.open("SoftSPI.txt", O_RDWR | O_CREAT))
+  {
     sd.errorHalt(F("open failed"));
   }
   file.println(F("This line was printed using software SPI."));
 
   file.rewind();
 
-  while (file.available()) {
+  while (file.available())
+  {
     Serial.write(file.read());
   }
 
@@ -54,6 +60,6 @@ void setup() {
 }
 //------------------------------------------------------------------------------
 void loop() {}
-#else  // ENABLE_SOFTWARE_SPI_CLASS
+#else // ENABLE_SOFTWARE_SPI_CLASS
 #error ENABLE_SOFTWARE_SPI_CLASS must be set non-zero in SdFat/SdFatConfig.h
-#endif  //ENABLE_SOFTWARE_SPI_CLASS
+#endif //ENABLE_SOFTWARE_SPI_CLASS

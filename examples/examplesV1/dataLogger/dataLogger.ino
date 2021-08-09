@@ -31,9 +31,11 @@ uint32_t logTime;
 const uint8_t ANALOG_COUNT = 4;
 //------------------------------------------------------------------------------
 // Write data header.
-void writeHeader() {
+void writeHeader()
+{
   file.print(F("micros"));
-  for (uint8_t i = 0; i < ANALOG_COUNT; i++) {
+  for (uint8_t i = 0; i < ANALOG_COUNT; i++)
+  {
     file.print(F(",adc"));
     file.print(i, DEC);
   }
@@ -41,18 +43,21 @@ void writeHeader() {
 }
 //------------------------------------------------------------------------------
 // Log a data record.
-void logData() {
+void logData()
+{
   uint16_t data[ANALOG_COUNT];
 
   // Read all channels to avoid SD write latency between readings.
-  for (uint8_t i = 0; i < ANALOG_COUNT; i++) {
+  for (uint8_t i = 0; i < ANALOG_COUNT; i++)
+  {
     data[i] = analogRead(i);
   }
   // Write data to file.  Start with log time in micros.
   file.print(logTime);
 
   // Write ADC data to CSV record.
-  for (uint8_t i = 0; i < ANALOG_COUNT; i++) {
+  for (uint8_t i = 0; i < ANALOG_COUNT; i++)
+  {
     file.write(',');
     file.print(data[i]);
   }
@@ -62,48 +67,61 @@ void logData() {
 // Error messages stored in flash.
 #define error(msg) sd.errorHalt(F(msg))
 //------------------------------------------------------------------------------
-void setup() {
+void setup()
+{
   const uint8_t BASE_NAME_SIZE = sizeof(FILE_BASE_NAME) - 1;
   char fileName[13] = FILE_BASE_NAME "00.csv";
 
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   // Wait for USB Serial
-  while (!Serial) {
+  while (!Serial)
+  {
     SysCall::yield();
   }
   delay(1000);
 
   Serial.println(F("Type any character to start"));
-  while (!Serial.available()) {
+  while (!Serial.available())
+  {
     SysCall::yield();
   }
 
   // Initialize at the highest speed supported by the board that is
   // not over 50 MHz. Try a lower speed if SPI errors occur.
-  if (!sd.begin(chipSelect, SD_SCK_MHZ(50))) {
+  if (!sd.begin(chipSelect, SD_SCK_MHZ(50)))
+  {
     sd.initErrorHalt();
   }
 
   // Find an unused file name.
-  if (BASE_NAME_SIZE > 6) {
+  if (BASE_NAME_SIZE > 6)
+  {
     error("FILE_BASE_NAME too long");
   }
-  while (sd.exists(fileName)) {
-    if (fileName[BASE_NAME_SIZE + 1] != '9') {
+  while (sd.exists(fileName))
+  {
+    if (fileName[BASE_NAME_SIZE + 1] != '9')
+    {
       fileName[BASE_NAME_SIZE + 1]++;
-    } else if (fileName[BASE_NAME_SIZE] != '9') {
+    }
+    else if (fileName[BASE_NAME_SIZE] != '9')
+    {
       fileName[BASE_NAME_SIZE + 1] = '0';
       fileName[BASE_NAME_SIZE]++;
-    } else {
+    }
+    else
+    {
       error("Can't create file name");
     }
   }
-  if (!file.open(fileName, O_WRONLY | O_CREAT | O_EXCL)) {
+  if (!file.open(fileName, O_WRONLY | O_CREAT | O_EXCL))
+  {
     error("file.open");
   }
   // Read any Serial data.
-  do {
+  do
+  {
     delay(10);
   } while (Serial.available() && Serial.read() >= 0);
 
@@ -115,33 +133,38 @@ void setup() {
   writeHeader();
 
   // Start on a multiple of the sample interval.
-  logTime = micros()/(1000UL*SAMPLE_INTERVAL_MS) + 1;
-  logTime *= 1000UL*SAMPLE_INTERVAL_MS;
+  logTime = micros() / (1000UL * SAMPLE_INTERVAL_MS) + 1;
+  logTime *= 1000UL * SAMPLE_INTERVAL_MS;
 }
 //------------------------------------------------------------------------------
-void loop() {
+void loop()
+{
   // Time for next record.
-  logTime += 1000UL*SAMPLE_INTERVAL_MS;
+  logTime += 1000UL * SAMPLE_INTERVAL_MS;
 
   // Wait for log time.
   int32_t diff;
-  do {
+  do
+  {
     diff = micros() - logTime;
   } while (diff < 0);
 
   // Check for data rate too high.
-  if (diff > 10) {
+  if (diff > 10)
+  {
     error("Missed data record");
   }
 
   logData();
 
   // Force data to SD and update the directory entry to avoid data loss.
-  if (!file.sync() || file.getWriteError()) {
+  if (!file.sync() || file.getWriteError())
+  {
     error("write error");
   }
 
-  if (Serial.available()) {
+  if (Serial.available())
+  {
     // Close file and stop.
     file.close();
     Serial.println(F("Done"));

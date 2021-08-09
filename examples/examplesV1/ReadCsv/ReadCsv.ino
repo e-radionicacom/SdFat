@@ -32,30 +32,37 @@ File file;
  * return - negative value for failure.
  *          delimiter, '\n' or zero(EOF) for success.
  */
-int csvReadText(File* file, char* str, size_t size, char delim) {
+int csvReadText(File *file, char *str, size_t size, char delim)
+{
   char ch;
   int rtn;
   size_t n = 0;
-  while (true) {
+  while (true)
+  {
     // check for EOF
-    if (!file->available()) {
+    if (!file->available())
+    {
       rtn = 0;
       break;
     }
-    if (file->read(&ch, 1) != 1) {
+    if (file->read(&ch, 1) != 1)
+    {
       // read error
       rtn = -1;
       break;
     }
     // Delete CR.
-    if (ch == '\r') {
+    if (ch == '\r')
+    {
       continue;
     }
-    if (ch == delim || ch == '\n') {
+    if (ch == delim || ch == '\n')
+    {
       rtn = ch;
       break;
     }
-    if ((n + 1) >= size) {
+    if ((n + 1) >= size)
+    {
       // string too long
       rtn = -2;
       n--;
@@ -67,103 +74,128 @@ int csvReadText(File* file, char* str, size_t size, char delim) {
   return rtn;
 }
 //------------------------------------------------------------------------------
-int csvReadInt32(File* file, int32_t* num, char delim) {
+int csvReadInt32(File *file, int32_t *num, char delim)
+{
   char buf[20];
-  char* ptr;
+  char *ptr;
   int rtn = csvReadText(file, buf, sizeof(buf), delim);
-  if (rtn < 0) return rtn;
+  if (rtn < 0)
+    return rtn;
   *num = strtol(buf, &ptr, 10);
-  if (buf == ptr) return -3;
-  while(isspace(*ptr)) ptr++;
+  if (buf == ptr)
+    return -3;
+  while (isspace(*ptr))
+    ptr++;
   return *ptr == 0 ? rtn : -4;
 }
 //------------------------------------------------------------------------------
-int csvReadInt16(File* file, int16_t* num, char delim) {
+int csvReadInt16(File *file, int16_t *num, char delim)
+{
   int32_t tmp;
   int rtn = csvReadInt32(file, &tmp, delim);
-  if (rtn < 0) return rtn;
-  if (tmp < INT_MIN || tmp > INT_MAX) return -5;
+  if (rtn < 0)
+    return rtn;
+  if (tmp < INT_MIN || tmp > INT_MAX)
+    return -5;
   *num = tmp;
   return rtn;
 }
 //------------------------------------------------------------------------------
-int csvReadUint32(File* file, uint32_t* num, char delim) {
+int csvReadUint32(File *file, uint32_t *num, char delim)
+{
   char buf[20];
-  char* ptr;
+  char *ptr;
   int rtn = csvReadText(file, buf, sizeof(buf), delim);
-  if (rtn < 0) return rtn;
+  if (rtn < 0)
+    return rtn;
   *num = strtoul(buf, &ptr, 10);
-  if (buf == ptr) return -3;
-  while(isspace(*ptr)) ptr++;
+  if (buf == ptr)
+    return -3;
+  while (isspace(*ptr))
+    ptr++;
   return *ptr == 0 ? rtn : -4;
 }
 //------------------------------------------------------------------------------
-int csvReadUint16(File* file, uint16_t* num, char delim) {
+int csvReadUint16(File *file, uint16_t *num, char delim)
+{
   uint32_t tmp;
   int rtn = csvReadUint32(file, &tmp, delim);
-  if (rtn < 0) return rtn;
-  if (tmp > UINT_MAX) return -5;
+  if (rtn < 0)
+    return rtn;
+  if (tmp > UINT_MAX)
+    return -5;
   *num = tmp;
   return rtn;
 }
 //------------------------------------------------------------------------------
-int csvReadDouble(File* file, double* num, char delim) {
+int csvReadDouble(File *file, double *num, char delim)
+{
   char buf[20];
-  char* ptr;
+  char *ptr;
   int rtn = csvReadText(file, buf, sizeof(buf), delim);
-  if (rtn < 0) return rtn;
+  if (rtn < 0)
+    return rtn;
   *num = strtod(buf, &ptr);
-  if (buf == ptr) return -3;
-  while(isspace(*ptr)) ptr++;
+  if (buf == ptr)
+    return -3;
+  while (isspace(*ptr))
+    ptr++;
   return *ptr == 0 ? rtn : -4;
 }
 //------------------------------------------------------------------------------
-int csvReadFloat(File* file, float* num, char delim) {
+int csvReadFloat(File *file, float *num, char delim)
+{
   double tmp;
   int rtn = csvReadDouble(file, &tmp, delim);
-  if (rtn < 0)return rtn;
+  if (rtn < 0)
+    return rtn;
   // could test for too large.
   *num = tmp;
   return rtn;
 }
 //------------------------------------------------------------------------------
-void setup() {
-  Serial.begin(9600);
+void setup()
+{
+  Serial.begin(115200);
 
   // Wait for USB Serial
-  while (!Serial) {
+  while (!Serial)
+  {
     yield();
   }
   Serial.println("Type any character to start");
-  while (!Serial.available()) {
+  while (!Serial.available())
+  {
     yield();
   }
   // Initialize the SD.
-  if (!SD.begin(CS_PIN)) {
+  if (!SD.begin(CS_PIN))
+  {
     Serial.println("begin failed");
     return;
   }
   // Remove existing file.
-   SD.remove("READTEST.TXT");
+  SD.remove("READTEST.TXT");
 
   // Create the file.
   file = SD.open("READTEST.TXT", FILE_WRITE);
-  if (!file) {
+  if (!file)
+  {
     Serial.println("open failed");
     return;
   }
   // Write test data.
   file.print(F(
 #if CSV_DELIM == ','
-    "36,23.20,20.70,57.60,79.50,01:08:14,23.06.16\r\n"
-    "37,23.21,20.71,57.61,79.51,02:08:14,23.07.16\r\n"
+      "36,23.20,20.70,57.60,79.50,01:08:14,23.06.16\r\n"
+      "37,23.21,20.71,57.61,79.51,02:08:14,23.07.16\r\n"
 #elif CSV_DELIM == ';'
-    "36;23.20;20.70;57.60;79.50;01:08:14;23.06.16\r\n"
-    "37;23.21;20.71;57.61;79.51;02:08:14;23.07.16\r\n"
+      "36;23.20;20.70;57.60;79.50;01:08:14;23.06.16\r\n"
+      "37;23.21;20.71;57.61;79.51;02:08:14;23.07.16\r\n"
 #else
 #error "Bad CSV_DELIM"
 #endif
-));
+      ));
 
   // Rewind the file for read.
   file.seek(0);
@@ -173,19 +205,16 @@ void setup() {
   float t1, t2, h1, h2;
   // Must be dim 9 to allow for zero byte.
   char timeS[9], dateS[9];
-  while (file.available()) {
-    if (csvReadInt16(&file, &tcalc, CSV_DELIM) != CSV_DELIM
-      || csvReadFloat(&file, &t1, CSV_DELIM) != CSV_DELIM
-      || csvReadFloat(&file, &t2, CSV_DELIM) != CSV_DELIM
-      || csvReadFloat(&file, &h1, CSV_DELIM) != CSV_DELIM
-      || csvReadFloat(&file, &h2, CSV_DELIM) != CSV_DELIM
-      || csvReadText(&file, timeS, sizeof(timeS), CSV_DELIM) != CSV_DELIM
-      || csvReadText(&file, dateS, sizeof(dateS), CSV_DELIM) != '\n') {
+  while (file.available())
+  {
+    if (csvReadInt16(&file, &tcalc, CSV_DELIM) != CSV_DELIM || csvReadFloat(&file, &t1, CSV_DELIM) != CSV_DELIM || csvReadFloat(&file, &t2, CSV_DELIM) != CSV_DELIM || csvReadFloat(&file, &h1, CSV_DELIM) != CSV_DELIM || csvReadFloat(&file, &h2, CSV_DELIM) != CSV_DELIM || csvReadText(&file, timeS, sizeof(timeS), CSV_DELIM) != CSV_DELIM || csvReadText(&file, dateS, sizeof(dateS), CSV_DELIM) != '\n')
+    {
       Serial.println("read error");
       int ch;
       int nr = 0;
       // print part of file after error.
-      while ((ch = file.read()) > 0 && nr++ < 100) {
+      while ((ch = file.read()) > 0 && nr++ < 100)
+      {
         Serial.write(ch);
       }
       break;
@@ -207,6 +236,6 @@ void setup() {
   file.close();
 }
 //------------------------------------------------------------------------------
-void loop() {
+void loop()
+{
 }
-

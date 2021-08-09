@@ -1,7 +1,7 @@
 // Example use of lfnOpenNext and open by index.
 // You can use test files located in
 // SdFat/examples/LongFileName/testFiles.
-#include<SPI.h>
+#include <SPI.h>
 #include "SdFat.h"
 #include "FreeStack.h"
 
@@ -21,9 +21,12 @@ const uint16_t nMax = 10;
 // Position of file's directory entry.
 uint16_t dirIndex[nMax];
 //------------------------------------------------------------------------------
-void setup() {
-  Serial.begin(9600);
-  while (!Serial) {}
+void setup()
+{
+  Serial.begin(115200);
+  while (!Serial)
+  {
+  }
   delay(1000);
 
   // Print the location of some test files.
@@ -33,7 +36,8 @@ void setup() {
 
   // Initialize at the highest speed supported by the board that is
   // not over 50 MHz. Try a lower speed if SPI errors occur.
-  if (!sd.begin(SD_CS_PIN, SD_SCK_MHZ(50))) {
+  if (!sd.begin(SD_CS_PIN, SD_SCK_MHZ(50)))
+  {
     sd.initErrorHalt();
   }
   Serial.print(F("FreeStack: "));
@@ -41,13 +45,16 @@ void setup() {
   Serial.println();
 
   // List files in root directory.
-  if (!dirFile.open("/", O_RDONLY)) {
+  if (!dirFile.open("/", O_RDONLY))
+  {
     sd.errorHalt("open root failed");
   }
-  while (n < nMax && file.openNext(&dirFile, O_RDONLY)) {
+  while (n < nMax && file.openNext(&dirFile, O_RDONLY))
+  {
 
     // Skip directories and hidden files.
-    if (!file.isSubDir() && !file.isHidden()) {
+    if (!file.isSubDir() && !file.isHidden())
+    {
 
       // Save dirIndex of file in directory.
       dirIndex[n] = file.dirIndex();
@@ -62,26 +69,31 @@ void setup() {
   }
 }
 //------------------------------------------------------------------------------
-void loop() {
+void loop()
+{
   int c;
 
   // Read any existing Serial data.
-  do {
+  do
+  {
     delay(10);
   } while (Serial.available() && Serial.read() >= 0);
   Serial.print(F("\r\nEnter File Number: "));
 
-  while (!Serial.available()) {
+  while (!Serial.available())
+  {
     SysCall::yield();
   }
   c = Serial.read();
   uint8_t i = c - '0';
-  if (!isdigit(c) || i >= n) {
+  if (!isdigit(c) || i >= n)
+  {
     Serial.println(F("Invald number"));
     return;
   }
   Serial.println(i);
-  if (!file.open(&dirFile, dirIndex[i], O_RDONLY)) {
+  if (!file.open(&dirFile, dirIndex[i], O_RDONLY))
+  {
     sd.errorHalt(F("open"));
   }
   Serial.println();
@@ -89,11 +101,13 @@ void loop() {
   char last = 0;
 
   // Copy up to 500 characters to Serial.
-  for (int k = 0; k < 500 && (c = file.read()) > 0; k++)  {
+  for (int k = 0; k < 500 && (c = file.read()) > 0; k++)
+  {
     Serial.write(last = (char)c);
   }
   // Add new line if missing from last line.
-  if (last != '\n') {
+  if (last != '\n')
+  {
     Serial.println();
   }
   file.close();

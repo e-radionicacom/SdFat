@@ -16,7 +16,8 @@ ArduinoOutStream cout(Serial);
 /*
  * Append a line to logfile.txt
  */
-void logEvent(const char *msg) {
+void logEvent(const char *msg)
+{
   // create dir if needed
   sd.mkdir("logs/2014/Jan");
 
@@ -27,29 +28,34 @@ void logEvent(const char *msg) {
   sdlog << msg << endl;
 
   // check for errors
-  if (!sdlog) {
+  if (!sdlog)
+  {
     sd.errorHalt("append failed");
   }
 
   sdlog.close();
 }
 //------------------------------------------------------------------------------
-void setup() {
-  Serial.begin(9600);
+void setup()
+{
+  Serial.begin(115200);
   // Wait for USB Serial
-  while (!Serial) {
+  while (!Serial)
+  {
     SysCall::yield();
   }
   // F() stores strings in flash to save RAM
   cout << F("Type any character to start\n");
-  while (!Serial.available()) {
+  while (!Serial.available())
+  {
     SysCall::yield();
   }
-  delay(400);  // catch Due reset problem
+  delay(400); // catch Due reset problem
 
   // Initialize at the highest speed supported by the board that is
   // not over 50 MHz. Try a lower speed if SPI errors occur.
-  if (!sd.begin(chipSelect, SD_SCK_MHZ(50))) {
+  if (!sd.begin(chipSelect, SD_SCK_MHZ(50)))
+  {
     sd.initErrorHalt();
   }
 

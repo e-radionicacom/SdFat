@@ -29,16 +29,16 @@ const uint8_t SD_CS_PIN = SS;
 #else  // SDCARD_SS_PIN
 // Assume built-in SD is used.
 const uint8_t SD_CS_PIN = SDCARD_SS_PIN;
-#endif  // SDCARD_SS_PIN
+#endif // SDCARD_SS_PIN
 
 // Try to select the best SD card configuration.
 #if HAS_SDIO_CLASS
 #define SD_CONFIG SdioConfig(FIFO_SDIO)
 #elif ENABLE_DEDICATED_SPI
 #define SD_CONFIG SdSpiConfig(SD_CS_PIN, DEDICATED_SPI)
-#else  // HAS_SDIO_CLASS
+#else // HAS_SDIO_CLASS
 #define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI)
-#endif  // HAS_SDIO_CLASS
+#endif // HAS_SDIO_CLASS
 
 #if SD_FAT_TYPE == 0
 SdFat sd;
@@ -52,10 +52,9 @@ ExFile file;
 #elif SD_FAT_TYPE == 3
 SdFs sd;
 FsFile file;
-#else  // SD_FAT_TYPE
+#else // SD_FAT_TYPE
 #error Invalid SD_FAT_TYPE
-#endif  // SD_FAT_TYPE
-
+#endif // SD_FAT_TYPE
 
 #if RTC_TYPE == 0
 RTC_Millis rtc;
@@ -65,13 +64,14 @@ RTC_DS1307 rtc;
 RTC_DS3231 rtc;
 #elif RTC_TYPE == 3
 RTC_PCF8523 rtc;
-#else  // RTC_TYPE == type
+#else // RTC_TYPE == type
 #error RTC_TYPE type not implemented.
-#endif  // RTC_TYPE == type
+#endif // RTC_TYPE == type
 
 //------------------------------------------------------------------------------
 // Call back for file timestamps.  Only called for file create and sync().
-void dateTime(uint16_t* date, uint16_t* time, uint8_t* ms10) {
+void dateTime(uint16_t *date, uint16_t *time, uint8_t *ms10)
+{
   DateTime now = rtc.now();
 
   // Return date using FS_DATE macro to format fields.
@@ -86,31 +86,40 @@ void dateTime(uint16_t* date, uint16_t* time, uint8_t* ms10) {
 //------------------------------------------------------------------------------
 #define error(msg) (Serial.println(F("error " msg)), false)
 //------------------------------------------------------------------------------
-void clearSerialInput() {
+void clearSerialInput()
+{
   uint32_t m = micros();
-  do {
-    if (Serial.read() >= 0) {
+  do
+  {
+    if (Serial.read() >= 0)
+    {
       m = micros();
     }
   } while (micros() - m < 10000);
 }
 //------------------------------------------------------------------------------
-void getLine(char* line, size_t size) {
+void getLine(char *line, size_t size)
+{
   size_t i = 0;
   uint32_t t;
   line[0] = '\0';
-  while (!Serial.available()) {
+  while (!Serial.available())
+  {
     yield();
   }
-  while (true) {
+  while (true)
+  {
     t = millis() + 10;
-    while (!Serial.available()) {
-      if (millis() > t){
+    while (!Serial.available())
+    {
+      if (millis() > t)
+      {
         return;
       }
     }
     int c = Serial.read();
-    if (i >= (size - 1) || c == '\r' || c == '\n' ) {
+    if (i >= (size - 1) || c == '\r' || c == '\n')
+    {
       return;
     }
     line[i++] = c;
@@ -118,31 +127,36 @@ void getLine(char* line, size_t size) {
   }
 }
 //------------------------------------------------------------------------------
-void printField(Print* pr, char sep, uint8_t v) {
-  if (sep) {
+void printField(Print *pr, char sep, uint8_t v)
+{
+  if (sep)
+  {
     pr->write(sep);
   }
-  if (v < 10) {
+  if (v < 10)
+  {
     pr->write('0');
   }
   pr->print(v);
 }
 //------------------------------------------------------------------------------
-void printNow(Print* pr) {
+void printNow(Print *pr)
+{
   DateTime now = rtc.now();
   pr->print(now.year());
-  printField(pr, '-',now.month());
-  printField(pr, '-',now.day());
-  printField(pr, ' ',now.hour());
-  printField(pr, ':',now.minute());
-  printField(pr, ':',now.second());
+  printField(pr, '-', now.month());
+  printField(pr, '-', now.day());
+  printField(pr, ' ', now.hour());
+  printField(pr, ':', now.minute());
+  printField(pr, ':', now.second());
 }
 //------------------------------------------------------------------------------
-bool setRtc() {
+bool setRtc()
+{
   uint16_t y;
   uint8_t m, d, hh, mm, ss;
   char line[30];
-  char* ptr;
+  char *ptr;
 
   clearSerialInput();
   Serial.println(F("Enter: YYYY-MM-DD hh:mm:ss"));
@@ -151,17 +165,23 @@ bool setRtc() {
   Serial.println(line);
 
   y = strtol(line, &ptr, 10);
-  if (*ptr++ != '-' || y < 2000 || y > 2099) return error("year");
+  if (*ptr++ != '-' || y < 2000 || y > 2099)
+    return error("year");
   m = strtol(ptr, &ptr, 10);
-  if (*ptr++ != '-' || m < 1 || m > 12) return error("month");
+  if (*ptr++ != '-' || m < 1 || m > 12)
+    return error("month");
   d = strtol(ptr, &ptr, 10);
-  if (d < 1 || d > 31) return error("day");
+  if (d < 1 || d > 31)
+    return error("day");
   hh = strtol(ptr, &ptr, 10);
-  if (*ptr++ != ':' || hh > 23) return error("hour");
+  if (*ptr++ != ':' || hh > 23)
+    return error("hour");
   mm = strtol(ptr, &ptr, 10);
-  if (*ptr++ != ':' || mm > 59) return error("minute");
+  if (*ptr++ != ':' || mm > 59)
+    return error("minute");
   ss = strtol(ptr, &ptr, 10);
-  if (ss > 59) return error("second");
+  if (ss > 59)
+    return error("second");
 
   rtc.adjust(DateTime(y, m, d, hh, mm, ss));
   Serial.print(F("RTC set to "));
@@ -170,19 +190,23 @@ bool setRtc() {
   return true;
 }
 //------------------------------------------------------------------------------
-void setup() {
-  Serial.begin(9600);
-  while (!Serial) {
+void setup()
+{
+  Serial.begin(115200);
+  while (!Serial)
+  {
     yield();
   }
 #if RTC_TYPE == 0
   rtc.begin(DateTime(F(__DATE__), F(__TIME__)));
 #else  // RTC_TYPE
-  if (!rtc.begin()) {
+  if (!rtc.begin())
+  {
     Serial.println(F("rtc.begin failed"));
     return;
   }
-  if (!rtc.isrunning()) {
+  if (!rtc.isrunning())
+  {
     Serial.println(F("RTC is NOT running!"));
     return;
     // following line sets the RTC to the date & time this sketch was compiled
@@ -191,30 +215,38 @@ void setup() {
     // January 21, 2014 at 3am you would call:
     // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
   }
-#endif  // RTC_TYPE
-  while (true) {
+#endif // RTC_TYPE
+  while (true)
+  {
     Serial.print(F("DateTime::now "));
     printNow(&Serial);
     Serial.println();
     clearSerialInput();
     Serial.println(F("Type Y to set RTC, any other character to continue"));
-    while (!Serial.available()) {}
-    if (Serial.read() != 'Y') break;
-    if (setRtc()) break;
+    while (!Serial.available())
+    {
+    }
+    if (Serial.read() != 'Y')
+      break;
+    if (setRtc())
+      break;
   }
   Serial.println();
 
   // Set callback
   FsDateTime::setCallback(dateTime);
 
-  if (!sd.begin(SD_CONFIG)) {
+  if (!sd.begin(SD_CONFIG))
+  {
     sd.initErrorHalt(&Serial);
   }
   // Remove old version to set create time.
-  if (sd.exists("RtcTest.txt")) {
+  if (sd.exists("RtcTest.txt"))
+  {
     sd.remove("RtcTest.txt");
   }
-  if (!file.open("RtcTest.txt", FILE_WRITE)) {
+  if (!file.open("RtcTest.txt", FILE_WRITE))
+  {
     Serial.println(F("file.open failed"));
     return;
   }
@@ -229,5 +261,6 @@ void setup() {
   Serial.println(F("Done"));
 }
 //------------------------------------------------------------------------------
-void loop() {
+void loop()
+{
 }
